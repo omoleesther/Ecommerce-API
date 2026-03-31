@@ -22,3 +22,22 @@ class UpdateProduct(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    product_img: str
+    price: int
+    stock: int
+
+    class Config:
+        from_attributes = True
+
+
+class ProductListResponse(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    results: list[ProductResponse]
