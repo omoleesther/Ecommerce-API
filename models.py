@@ -13,7 +13,6 @@ class User(Base):
     role = Column(String(20), nullable=False)
     password_hash = Column(String(200), nullable=False)
     is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=False)
     join_date = Column(DateTime, default=datetime.utcnow)
     confirmed = Column(Boolean, default=False)
 
@@ -22,8 +21,8 @@ class Product(Base):
     __tablename__ = 'products'
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False, index=True)
-    # category = Column(String(30), index=True)
+    name = Column(String(100), nullable=False, unique=True)
+    category_id = Column(Integer, ForeignKey('categories.id'))
     description = Column(String(240), nullable=False)
     price = Column(DECIMAL(12, 2), nullable=False)
     stock = Column(Integer, nullable=False)
@@ -34,6 +33,13 @@ class Product(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow,
                         onupdate=datetime.utcnow)
+
+
+class Category(Base):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False, unique=True)
 
 
 class Order(Base):
