@@ -1,11 +1,15 @@
 # ​An API router is basically a fast API app. But instead of running on its own, ​it can be included into an existing app. ​Then it basically lets you use these endpoints in the original app.
 from fastapi import APIRouter, Depends
-from schema.product import CreateProduct, UpdateProduct
+from schema.product import CreateProduct, UpdateProduct, ProductListResponse
 from utils.auth import get_current_active_user
 from fastapi import HTTPException
 import models
 from datetime import datetime
 from utils.getdb import db_dependency
+from typing import Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from utils.getdb import get_db
 router = APIRouter()
 
 
@@ -28,12 +32,64 @@ def create_product(product: CreateProduct, db: db_dependency, current_user: mode
     return "product sucessfully added"
 
 
-@router.get("/get-all-product")
-def all_product(db: db_dependency):
-    db_product = db.query(models.Product).filter(
-        models.Product.is_active == True).all()
+@router.get("/get-all-product", response_model=ProductListResponse)
+def all_product(
+    # FILTERING
+    search: Optional[str] = None,
+    min_price: Optional[int] = None,
+    max_price: Optional[int] = None,
+    in_stock: Optional[int] = None,
+    sort_by: Optional[str] = 'created_at',  # field to sort
+    order: Optional[str] = 'desc',  # asc or desc
+    skip: int = 0,  # records to skip(default start fromt beginning)
+    limit: int = 10,  # record to return (default:10 per pages )
+        db: Session = Depends(get_db)):
 
-    return db_product
+    # base query always start from here
+    query = db.query(models.Product).filter(
+        models.Product.is_active == True)
+
+    # search query
+    if search:
+        query = query.filter(func.lower(
+            models.Product.name).like(f"%{search.lower()}%"))
+
+    # NONe is used for numbers
+    if min_price is not None:
+        query = query.filter(models.Product.price >= min_price)
+
+    if max_price is not None:
+        query = query.filter(models.Product.price <= max_price)
+
+    if in_stock is not None:
+        query = query.filter(models.Product.stock > 0)
+
+    # sorting
+    sort_field = {
+        "price": models.Product.price,
+        "name": models.Product.name,
+        "created_at": models.Product.created_at,
+        "stock": models.Product.stock,
+    }
+
+    field = sort_field.get(sort_by, models.Product.created_at)
+    if order == 'asc':
+        query = query.order_by(field.asc())
+    else:
+        query = query.order_by(field.desc()
+                               )
+
+    # pagination
+    total = query.count()
+
+    products = query.offset(skip).limit(limit).all()
+    return {
+        "total": total,
+        "page": (skip//limit)+1,
+        "per_page": limit,
+        "results": products
+
+    }
 
 
 @router.get("/get-product-by-id")
