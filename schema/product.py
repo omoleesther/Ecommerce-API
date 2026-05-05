@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timedelta
 
 
 class CreateProduct(BaseModel):
@@ -8,6 +7,7 @@ class CreateProduct(BaseModel):
     description: str
     price: int
     stock: int
+    category_id: Optional[int]
 
     class Config:
         from_attributes = True
@@ -18,7 +18,7 @@ class UpdateProduct(BaseModel):
     description: Optional[str] = None
     price: Optional[int] = None
     stock: Optional[int] = None
-    updated_at: datetime
+    category_id: Optional[int] = None
 
     class Config:
         from_attributes = True
