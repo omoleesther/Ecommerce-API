@@ -7,7 +7,6 @@ class CreateUser(BaseModel):
     username: str
     email: str
     phone: Optional[str] = None
-    role: str
 
     class Config:
         from_attributes = True
@@ -17,7 +16,6 @@ class UserLogin(BaseModel):
     username: str
     email: str
     phone: str
-    role: str
     password: str
 
     class Config:
