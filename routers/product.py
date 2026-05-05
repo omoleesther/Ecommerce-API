@@ -24,6 +24,7 @@ def create_product(product: CreateProduct, db: db_dependency, current_user: mode
         price=product.price,
         stock=product.stock,
         owner_id=current_user.id,
+        category_id=product.category_id,
         created_at=datetime.utcnow()
     )
     db.add(db_product)
@@ -39,6 +40,7 @@ def all_product(
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     in_stock: Optional[int] = None,
+    category_id: Optional[int] = None,
     sort_by: Optional[str] = 'created_at',  # field to sort
     order: Optional[str] = 'desc',  # asc or desc
     skip: int = 0,  # records to skip(default start fromt beginning)
@@ -64,12 +66,16 @@ def all_product(
     if in_stock is not None:
         query = query.filter(models.Product.stock > 0)
 
+    if category_id is not None:
+        query = query.filter(models.Product.category_id == category_id)
+
     # sorting
     sort_field = {
         "price": models.Product.price,
         "name": models.Product.name,
         "created_at": models.Product.created_at,
         "stock": models.Product.stock,
+        "category": models.Product.category_id,
     }
 
     field = sort_field.get(sort_by, models.Product.created_at)
@@ -131,7 +137,7 @@ def delete_product(product_id: int, db: db_dependency, current_user: models.User
 @router.put("/update-product-admin/{product_id}")
 def update_product(product_id: int, product: UpdateProduct, db: db_dependency, current_user: models.User = Depends(get_current_active_user)):
     if current_user.role != "admin":
-        raise HTTPException(status_code=401, detail="Not an Admin")
+        raise HTTPException(status_code=403, detail="Not an Admin")
 
     db_product = db.query(models.Product).filter(
         models.Product.id == product_id).first()
@@ -154,6 +160,9 @@ def update_product(product_id: int, product: UpdateProduct, db: db_dependency, c
     if product.stock is not None:
         db_product.stock = product.stock
 
+    if product.category_id is not None:
+        db_product.category_id = product.category_id
+
     db.commit()
     db.refresh(db_product)
-    return f" {db_product} updated at : {datetime.utcnow()} "
+    return db_product
