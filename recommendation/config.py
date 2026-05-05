@@ -6,9 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     RESEND_API_KEY: str
-    URL_DATABASE: str = Field(
-        default="mysql+pymysql://root:@localhost:3306/ecommerce"
-    )
+    URL_DATABASE: str
     SECRET_KEY: str
 
     class Config:

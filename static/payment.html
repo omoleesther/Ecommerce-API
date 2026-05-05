@@ -377,9 +377,7 @@
       const API_BASE = "http://127.0.0.1:8000";
 
       // Get token from localStorage (set this when user logs in)
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlc3RoZXJvbW9sZWUwOEBnbWFpbC5jb20iLCJleHAiOjE3NzYwODQwNTEsInR5cGUiOiJhY2Nlc3MifQ._HtRpZrkcOYPc3Lfz8fvYS76Svn3-y6_xGSovwREYgI";
-      //localStorage.getItem("access_token");
+      const token = localStorage.getItem("access_token");
       async function loadOrderSummary() {
         try {
           const res = await fetch(`${API_BASE}/orders/pending`, {
