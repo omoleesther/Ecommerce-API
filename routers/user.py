@@ -8,11 +8,30 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from utils.getdb import db_dependency
 TOKEN_EXPIRE = 30
+
 router = APIRouter()
 
 
 # 201 successfully created
-@router.post('/create-user', response_model=CreateUser, status_code=201)
+@router.post("/setup-admin")
+def create_admin(user: UserLogin, db: db_dependency):
+    # only works if no admin exists yet
+    if db.query(models.User).filter(models.User.role == "admin").first():
+        raise HTTPException(status_code=400, detail="Admin already exists")
+
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        password_hash=get_password_hash(user.password),
+        role="admin",
+        is_active=True,
+        confirmed=True
+    )
+    db.add(db_user)
+    db.commit()
+
+
+@router.post('/create-user',  status_code=201)
 def create_user(user: UserLogin, background_tasks: BackgroundTasks, db: db_dependency):
     if db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(
@@ -26,7 +45,7 @@ def create_user(user: UserLogin, background_tasks: BackgroundTasks, db: db_depen
         username=user.username,
         email=user.email,
         phone=user.phone,
-        role=user.role,
+        role="customer",
         password_hash=hashed_password,
         confirmed=False
     )
@@ -34,16 +53,13 @@ def create_user(user: UserLogin, background_tasks: BackgroundTasks, db: db_depen
     db.commit()
     db.refresh(db_user)
     # Generate confirmation token and link
-    token = create_confirmation_token({"email": user.email})
+    token = create_confirmation_token(user.email)
     confirmation_link = f"http://127.0.0.1:8000/confirm-email?token={token}"
 
     # Send confirmation email
     background_tasks.add_task(send_email, user.email, confirmation_link)
     return {
-        "details": "User created.please confirm your email",
-        "confirmation_email": create_confirmation_token(user.email)
-
-
+        "details": "User created.please confirm your email"
     }
 
 
@@ -63,7 +79,7 @@ def confirm_email(token: str, db: db_dependency):
         raise HTTPException(status_code=404, detail="User not found")
 
     #  Mark user as verified
-    user.is_verified = True  # make sure your User model has this column
+    user.confirmed = True  # make sure your User model has this column
     db.commit()
 
     return {"message": "Email confirmed successfully!"}
@@ -72,7 +88,7 @@ def confirm_email(token: str, db: db_dependency):
 @router.post("/token")
 def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user(form_data.username, form_data.password)
+    user = authenticate_user(form_data.username, form_data.password, db)
 
     if not user.is_active:
         raise HTTPException(
@@ -81,7 +97,7 @@ def login(
     access_token = create_access_token(
         user.email, expires_delta=access_token_expires)
     return {
-        " access_token ": access_token,
+        "access_token": access_token,
         "token_type": "bearer"
     }
 
@@ -100,7 +116,7 @@ def verify_token_endpoints(current_user: models.User = Depends(get_current_activ
     }
 
 
-@router.get("/confirm/{token}")
+@router.get("/confirm-email?token={token}")
 def confirm_email(token: str, db: db_dependency):
     email = get_subject_for_token_type(token, "confirmation")
     user = db.query(models.User).filter(models.User.email == email).first()
@@ -127,8 +143,8 @@ def update_profile(user: UpdateProfile, db: db_dependency, current_user: models.
         db_user.username = user.username
 
     if user.email is not None:
-        if current_user.is_verified != True:
-            raise HTTPException(status_code=401, detail="Not Verified")
+        if current_user.confirmed != True:
+            raise HTTPException(status_code=401, detail="Not confirmed")
         db_user.email = user.email
 
     if user.phone is not None:
