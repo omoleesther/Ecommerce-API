@@ -3,4 +3,14 @@ __pycache__/
 
 # Ignore environment variables file (in case you add one later)
 .env
+recommendation/.env
 venv/
+env/
+
+desktop.ini 
+.vscode/
+
+*.docx
+uvicorn
+
+*.pkl

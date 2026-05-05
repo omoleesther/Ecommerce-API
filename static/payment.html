@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --black: #0a0a0a;
+        --white: #f5f3ee;
+        --green: #00c37a;
+        --green-dark: #009960;
+        --muted: #6b6b6b;
+        --border: #e0ddd8;
+        --card: #ffffff;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--white);
+        color: var(--black);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 460px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #e8faf2;
+        color: var(--green-dark);
+        font-size: 12px;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 20px;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.02em;
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--green);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      h1 {
+        font-family: "Syne", sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 2rem;
+        font-weight: 300;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .order-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .order-id {
+        font-family: "Syne", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--black);
+      }
+
+      .order-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+      }
+
+      .order-row-label {
+        font-size: 14px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      .order-row-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--black);
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 12px 0;
+      }
+
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+      }
+
+      .total-label {
+        font-family: "Syne", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .total-amount {
+        font-family: "Syne", sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .pay-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--black);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-family: "Syne", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 0.75rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .pay-btn::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          transparent 40%,
+          rgba(255, 255, 255, 0.07) 100%
+        );
+      }
+
+      .pay-btn:hover {
+        background: #1a1a1a;
+        transform: translateY(-1px);
+      }
+
+      .pay-btn:active {
+        transform: translateY(0);
+      }
+
+      .pay-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .pay-btn.loading .btn-text {
+        display: none;
+      }
+      .pay-btn.loading .btn-loader {
+        display: flex;
+      }
+      .btn-loader {
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .arrow {
+        font-size: 18px;
+        transition: transform 0.2s;
+      }
+      .pay-btn:hover .arrow {
+        transform: translateX(3px);
+      }
+
+      .secure-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 300;
+      }
+
+      .lock-icon {
+        font-size: 11px;
+      }
+
+      .error-msg {
+        background: #fff0f0;
+        border: 1px solid #ffc5c5;
+        color: #c0392b;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .error-msg.show {
+        display: block;
+      }
+
+      .powered {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 11px;
+        color: #b0b0b0;
+        letter-spacing: 0.05em;
+      }
+
+      .powered span {
+        font-weight: 600;
+        color: var(--green-dark);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .container > * {
+        animation: fadeUp 0.4s ease both;
+      }
+      .container > *:nth-child(2) {
+        animation-delay: 0.05s;
+      }
+      .container > *:nth-child(3) {
+        animation-delay: 0.1s;
+      }
+      .container > *:nth-child(4) {
+        animation-delay: 0.15s;
+      }
+      .container > *:nth-child(5) {
+        animation-delay: 0.2s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Secure Checkout
+      </div>
+
+      <h1>Complete your<br />payment</h1>
+      <p class="subtitle">
+        You will be redirected to Paystack to complete your purchase securely.
+      </p>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="card">
+        <div class="order-header">
+          <span class="order-label">Order Summary</span>
+          <span class="order-id" id="orderId">Loading...</span>
+        </div>
+        <div class="order-row">
+          <span class="order-row-label">Status</span>
+          <span class="order-row-value" id="orderStatus">—</span>
+        </div>
+        <div class="order-row">
+          <span class="order-row-label">Date</span>
+          <span class="order-row-value" id="orderDate">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="total-row">
+          <span class="total-label">Total</span>
+          <span class="total-amount" id="orderTotal">—</span>
+        </div>
+      </div>
+
+      <button class="pay-btn" id="payBtn" onclick="initializePayment()">
+        <span class="btn-text">Pay Now <span class="arrow">→</span></span>
+        <span class="btn-loader">
+          <span class="spinner"></span>
+          Processing...
+        </span>
+      </button>
+
+      <p class="secure-note">
+        <span class="lock-icon">🔒</span>
+        Secured by Paystack · 256-bit SSL encryption
+      </p>
+
+      <p class="powered">Powered by <span>Paystack</span></p>
+    </div>
+
+    <script>
+      const API_BASE = "http://127.0.0.1:8000";
+
+      // Get token from localStorage (set this when user logs in)
+      const token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlc3RoZXJvbW9sZWUwOEBnbWFpbC5jb20iLCJleHAiOjE3NzYwODQwNTEsInR5cGUiOiJhY2Nlc3MifQ._HtRpZrkcOYPc3Lfz8fvYS76Svn3-y6_xGSovwREYgI";
+      //localStorage.getItem("access_token");
+      async function loadOrderSummary() {
+        try {
+          const res = await fetch(`${API_BASE}/orders/pending`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            document.getElementById("orderId").textContent = `#${data.id}`;
+            document.getElementById("orderStatus").textContent =
+              data.status.charAt(0).toUpperCase() + data.status.slice(1);
+            document.getElementById("orderDate").textContent = new Date(
+              data.created_at,
+            ).toLocaleDateString("en-NG", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            });
+            document.getElementById("orderTotal").textContent =
+              `₦${Number(data.total_amount).toLocaleString("en-NG")}`;
+          }
+        } catch (e) {
+          document.getElementById("orderId").textContent = "—";
+        }
+      }
+
+      async function initializePayment() {
+        const btn = document.getElementById("payBtn");
+        const errorMsg = document.getElementById("errorMsg");
+
+        errorMsg.classList.remove("show");
+        btn.classList.add("loading");
+        btn.disabled = true;
+
+        try {
+          const res = await fetch(`${API_BASE}/initialize-payment`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.detail || "Payment initialization failed");
+          }
+
+          // Redirect to Paystack checkout
+          window.location.href = data.payment_link;
+        } catch (err) {
+          errorMsg.textContent = err.message;
+          errorMsg.classList.add("show");
+          btn.classList.remove("loading");
+          btn.disabled = false;
+        }
+      }
+
+      loadOrderSummary();
+    </script>
+  </body>
+</html>
