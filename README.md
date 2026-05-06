@@ -21,7 +21,7 @@ A full-featured ecommerce REST API built with FastAPI and MySQL, featuring JWT a
 - **Authentication** — JWT with python-jose
 - **Payments** — Paystack
 - **Email** — Resend
-- **ML** — Scikit-learn, Pandas, NumPy
+- **ML** — Scikit-learn, Pandas
 - **Background Tasks** — TaskIQ with RabbitMQ broker and Redis backend
 - **Password Hashing** — Passlib with bcrypt
 
