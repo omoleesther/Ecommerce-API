@@ -1,0 +1,6 @@
+[submodule "recommendation-service"]
+	path = recommendation-service
+	url = https://github.com/omoleesther/recommendation-service.git
+[submodule "recommendation"]
+	path = recommendation
+	url = https://github.com/omoleesther/recommendation-service.git
