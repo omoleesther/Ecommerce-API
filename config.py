@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     URL_DATABASE: str
     SECRET_KEY: str
     PAYSTACK_TEST_SECRET_KEY: str
+    BASE_URL: str = "http://127.0.0.1:8000"
 
     class Config:
         env_file = ".env"
