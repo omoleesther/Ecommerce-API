@@ -27,6 +27,6 @@ def create_category(category: CreateCategory, db: db_dependency, current_user: m
 
 @router.get("/get-category")
 def get_category(db: db_dependency):
-    category = db.query(models.Category).filter(models.Category.name).all()
+    category = db.query(models.Category).all()
 
     return category
