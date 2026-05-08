@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from utils.getdb import db_dependency
+from utils.auth import settings
 TOKEN_EXPIRE = 30
 
 router = APIRouter()
@@ -54,7 +55,7 @@ def create_user(user: UserLogin, background_tasks: BackgroundTasks, db: db_depen
     db.refresh(db_user)
     # Generate confirmation token and link
     token = create_confirmation_token(user.email)
-    confirmation_link = f"http://127.0.0.1:8000/confirm-email?token={token}"
+    confirmation_link = f"{settings.BASE_URL}/confirm-email?token={token}"
 
     # Send confirmation email
     background_tasks.add_task(send_email, user.email, confirmation_link)
